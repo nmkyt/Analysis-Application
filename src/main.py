@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import analysis
 import data_preprocessing as data
+from config import settings
 import customtkinter
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
@@ -70,10 +71,10 @@ def generate_revenue_report(months):
     canvas.get_tk_widget().pack()
 
     # Сохранение графика в файл
-    fig.savefig('..\\data\\forecast_sales.png')
+    fig.savefig(settings.data_dir / 'forecast_sales.png')
 
     # Создание отчета в текстовый файл
-    with open('..\\data\\forecast_revenue_report.txt', 'w') as file:
+    with open(settings.data_dir / 'forecast_revenue_report.txt', 'w') as file:
         file.write("Отчет с прогнозом выручки за следующие " + str(months) + " месяцев:\n")
         file.write(df_forecast.to_string(index=False))
 
@@ -122,10 +123,10 @@ def generate_sales_report(months):
     canvas.get_tk_widget().pack()
 
     # Сохранение графика в файл
-    fig.savefig('..\\data\\forecast_sales.png')
+    fig.savefig(settings.data_dir / 'forecast_sales.png')
 
     # Создание отчета в текстовый файл
-    with open('..\\data\\forecast_sales_report.txt', 'w') as file:
+    with open(settings.data_dir / 'forecast_sales_report.txt', 'w') as file:
         file.write("Отчет с прогнозом продаж на следующие " + str(months) + " месяцев:\n")
         file.write(df_forecast.to_string(index=False))
 
@@ -195,10 +196,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig('..\\data\\forecast_sales.png')
+        fig.savefig(settings.data_dir / 'forecast_sales.png')
 
         # Создание отчета в текстовый файл
-        with open('..\\data\\forecast_pipes_sales_report.txt', 'w') as file:
+        with open(settings.data_dir / 'forecast_pipes_sales_report.txt', 'w') as file:
             file.write("Отчет с прогнозом продаж труб на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -247,10 +248,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig('..\\data\\forecast_sales.png')
+        fig.savefig(settings.data_dir / 'forecast_sales.png')
 
         # Создание отчета в текстовый файл
-        with open('..\\data\\forecast_constructions_sales_report.txt', 'w') as file:
+        with open(settings.data_dir / 'forecast_constructions_sales_report.txt', 'w') as file:
             file.write("Отчет с прогнозом продаж метал. конструкций на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -299,10 +300,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig('..\\data\\forecast_sales.png')
+        fig.savefig(settings.data_dir / 'forecast_sales.png')
 
         # Создание отчета в текстовый файл
-        with open('..\\data\\forecast_hardware_sales_report.txt', 'w') as file:
+        with open(settings.data_dir / 'forecast_hardware_sales_report.txt', 'w') as file:
             file.write("Отчет с прогнозом продаж метизов на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -351,10 +352,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig('..\\data\\forecast_sales.png')
+        fig.savefig(settings.data_dir / 'forecast_sales.png')
 
         # Создание отчета в текстовый файл
-        with open('..\\data\\forecast_stainless_sales_report.txt', 'w') as file:
+        with open(settings.data_dir / 'forecast_stainless_sales_report.txt', 'w') as file:
             file.write("Отчет с прогнозом продаж нержавеющей стали на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -403,10 +404,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig('..\\data\\forecast_sales.png')
+        fig.savefig(settings.data_dir / 'forecast_sales.png')
 
         # Создание отчета в текстовый файл
-        with open('..\\data\\forecast_grid_sales_report.txt', 'w') as file:
+        with open(settings.data_dir / 'forecast_grid_sales_report.txt', 'w') as file:
             file.write("Отчет с прогнозом продаж металлических сеток на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 

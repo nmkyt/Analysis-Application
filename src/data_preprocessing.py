@@ -2,14 +2,16 @@ import pandas as pd
 import mysql.connector as sql
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
+from config import settings
 
 try:
-    # Установка параметров подключения к базе данных
+    # Установка параметров подключения к базе данных (значения берутся из .env)
     connection = sql.connect(
-        host="localhost",
-        user="user",
-        password="",
-        database="analysissystem"
+        host=settings.db.host,
+        port=settings.db.port,
+        user=settings.db.user,
+        password=settings.db.password.get_secret_value(),
+        database=settings.db.name
     )
 
     # Если подключение успешно, выведется сообщение "Подключено к базе данных"
