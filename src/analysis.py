@@ -13,8 +13,9 @@ def analysis(attributes, target, df):
     model = RandomForestRegressor(n_estimators=100, random_state=42)
     model.fit(attributes_train, target_train)
 
+    # Оценка точности на тестовом наборе, который модель не видела при обучении
+    mae = mean_absolute_error(target_test, model.predict(attributes_test))
+
     # Предсказание значений целевой переменной
     target_prediction = model.predict(df)
-    mae_model = model.predict(attributes)
-    mae = mean_absolute_error(target, mae_model)
     return target_prediction, mae
