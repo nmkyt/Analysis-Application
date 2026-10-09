@@ -7,9 +7,8 @@
 
 ## Дипломная работа
 
-| | |
-|---|---|
 | Тема | «Разработка приложения для анализа и прогнозирования продаж организации» |
+|---|---|
 | Вид работы | Выпускная квалификационная работа (бакалаврская работа) |
 | Вуз | ФГБОУ ВО «Тольяттинский государственный университет» |
 | Кафедра | «Прикладная математика и информатика» |
@@ -41,9 +40,8 @@
 > информации о компании из дипломной работы. Объёмы продаж, клиенты, цены, поставщики и остатки
 > вымышлены и не являются данными ООО «Металл-Маркет».
 
-| | |
-|---|---|
 | Период | октябрь 2021 — сентябрь 2026 |
+|---|---|
 | Ассортимент | 927 позиций в 62 категориях: черный и оцинкованный прокат, трубы, сетки, метизы, фитинги, нержавейка, цветной металл, готовые изделия |
 | Клиенты | около 29 тыс.: частные лица, мелкие строители, строительные компании, производства, перепродавцы |
 | Заказы | около 250 тыс. заказов и 940 тыс. строк, около 155 тыс. т металлопроката |
@@ -65,15 +63,30 @@
 ## Структура репозитория
 
 ```
-src/                      пакет приложения
-  config.py               настройки из .env (pydantic-settings)
-  main.py                 приложение из дипломной работы (интерфейс customtkinter)
-  analysis.py             модель случайного леса
-  data_preprocessing.py   загрузка данных из MySQL и кодирование признаков
-storage/                  база данных PostgreSQL
-  schema.sql, schema.py   создание роли и базы
-  tables.sql              таблицы, индексы и представления
-data/                     отчёты, сформированные приложением 2024 года
+src/
+└── sales_analytics/              устанавливаемый пакет (импорт: sales_analytics.*)
+    ├── config.py                 настройки из .env: DB_*, DATA_DIR (pydantic-settings)
+    ├── exceptions.py             SalesAnalyticsError / StorageError
+    ├── storage/                  учётная система в PostgreSQL
+    │   ├── sql/tables.sql        таблицы, индексы и представления
+    │   ├── schema.py             create_tables()
+    │   ├── postgres.py           connect() — подключение с параметрами из .env
+    │   └── __main__.py           точка входа: создание таблиц
+    ├── dataset/                  выгрузка и загрузка датасета в CSV (в разработке)
+    ├── forecasting/              прогноз спроса (в разработке)
+    ├── inventory/                пополнение запасов (в разработке)
+    └── thesis2024/               приложение из дипломной работы
+        ├── app.py                интерфейс customtkinter и отчёты
+        ├── analysis.py           модель случайного леса
+        ├── data_preprocessing.py загрузка данных из MySQL и кодирование признаков
+        └── __main__.py           точка входа
+infra/                            инфраструктура
+├── docker-compose.yml            PostgreSQL в контейнере
+└── postgres/
+    ├── schema.sql                роль приложения и база данных на установленном PostgreSQL
+    └── schema.py                 запуск schema.sql с параметрами из .env
+docs/database.md                  описание модели данных
+data/thesis2024/                  отчёты, сформированные приложением 2024 года
 ```
 
 Приложение 2024 года работает со схемой MySQL из дипломной работы и с новой базой
@@ -81,13 +94,32 @@ data/                     отчёты, сформированные прило�
 
 ## Запуск
 
-Нужны Python 3.13 и PostgreSQL 15+.
+Нужны Python 3.13 и PostgreSQL 15+ — установленный или в Docker.
 
 ```bash
 python -m venv .venv
-.venv/Scripts/python -m pip install -r requirements.txt   # в Linux/macOS: .venv/bin/python
-cp .env.example .env                                       # и указать пароль DB_PASSWORD
-python storage/schema.py --tables                          # роль, база и таблицы
+.venv/Scripts/python -m pip install -e .        # в Linux/macOS: .venv/bin/python
+cp .env.example .env                            # и указать пароль DB_PASSWORD
+```
+
+База данных — один из двух вариантов:
+
+```bash
+docker compose --env-file .env -f infra/docker-compose.yml up -d   # PostgreSQL в контейнере
+python infra/postgres/schema.py                                    # или роль и база на установленном PostgreSQL
+```
+
+Затем таблицы:
+
+```bash
+python -m sales_analytics.storage --yes
+```
+
+Приложение 2024 года ставится с дополнительными зависимостями и запускается отдельно:
+
+```bash
+.venv/Scripts/python -m pip install -e ".[thesis2024]"
+python -m sales_analytics.thesis2024
 ```
 
 ## Технологии

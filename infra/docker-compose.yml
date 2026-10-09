@@ -1,0 +1,27 @@
+# PostgreSQL в контейнере - вместо локальной установки.
+# Роль, пароль и база берутся из .env проекта; роль становится владельцем базы.
+# Запуск из корня репозитория:
+#   docker compose --env-file .env -f infra/docker-compose.yml up -d
+
+name: sales-analytics
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: ${DB_USER:?задайте DB_USER в .env}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?задайте DB_PASSWORD в .env}
+      POSTGRES_DB: ${DB_NAME:?задайте DB_NAME в .env}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  postgres-data:

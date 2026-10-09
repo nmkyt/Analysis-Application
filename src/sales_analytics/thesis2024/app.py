@@ -2,7 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from . import analysis
 from . import data_preprocessing as data
-from .config import settings
+from ..config import settings
 import customtkinter
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -13,6 +13,12 @@ selected_months = None
 
 # Меню выбора категории (создаётся один раз при первом выборе отчёта по категориям)
 category_selection_menu = None
+
+# Главное окно приложения, создаётся в main()
+root = None
+
+# Папка для отчётов и графиков
+REPORTS_DIR = settings.data_dir / 'thesis2024'
 
 
 # Функция для обновления выбранного отчета
@@ -90,10 +96,10 @@ def generate_revenue_report(months):
     canvas.get_tk_widget().pack()
 
     # Сохранение графика в файл
-    fig.savefig(settings.data_dir / 'forecast_revenue_report.png')
+    fig.savefig(REPORTS_DIR / 'forecast_revenue_report.png')
 
     # Создание отчета в текстовый файл
-    with open(settings.data_dir / 'forecast_revenue_report.txt', 'w', encoding='utf-8') as file:
+    with open(REPORTS_DIR / 'forecast_revenue_report.txt', 'w', encoding='utf-8') as file:
         file.write("Отчет с прогнозом выручки за следующие " + str(months) + " месяцев:\n")
         file.write(df_forecast.to_string(index=False))
 
@@ -142,10 +148,10 @@ def generate_sales_report(months):
     canvas.get_tk_widget().pack()
 
     # Сохранение графика в файл
-    fig.savefig(settings.data_dir / 'forecast_sales_report.png')
+    fig.savefig(REPORTS_DIR / 'forecast_sales_report.png')
 
     # Создание отчета в текстовый файл
-    with open(settings.data_dir / 'forecast_sales_report.txt', 'w', encoding='utf-8') as file:
+    with open(REPORTS_DIR / 'forecast_sales_report.txt', 'w', encoding='utf-8') as file:
         file.write("Отчет с прогнозом продаж на следующие " + str(months) + " месяцев:\n")
         file.write(df_forecast.to_string(index=False))
 
@@ -228,10 +234,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig(settings.data_dir / 'forecast_pipes_sales_report.png')
+        fig.savefig(REPORTS_DIR / 'forecast_pipes_sales_report.png')
 
         # Создание отчета в текстовый файл
-        with open(settings.data_dir / 'forecast_pipes_sales_report.txt', 'w', encoding='utf-8') as file:
+        with open(REPORTS_DIR / 'forecast_pipes_sales_report.txt', 'w', encoding='utf-8') as file:
             file.write("Отчет с прогнозом продаж труб на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -280,10 +286,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig(settings.data_dir / 'forecast_constructions_sales_report.png')
+        fig.savefig(REPORTS_DIR / 'forecast_constructions_sales_report.png')
 
         # Создание отчета в текстовый файл
-        with open(settings.data_dir / 'forecast_constructions_sales_report.txt', 'w', encoding='utf-8') as file:
+        with open(REPORTS_DIR / 'forecast_constructions_sales_report.txt', 'w', encoding='utf-8') as file:
             file.write("Отчет с прогнозом продаж метал. конструкций на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -332,10 +338,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig(settings.data_dir / 'forecast_hardware_sales_report.png')
+        fig.savefig(REPORTS_DIR / 'forecast_hardware_sales_report.png')
 
         # Создание отчета в текстовый файл
-        with open(settings.data_dir / 'forecast_hardware_sales_report.txt', 'w', encoding='utf-8') as file:
+        with open(REPORTS_DIR / 'forecast_hardware_sales_report.txt', 'w', encoding='utf-8') as file:
             file.write("Отчет с прогнозом продаж метизов на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -384,10 +390,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig(settings.data_dir / 'forecast_stainless_sales_report.png')
+        fig.savefig(REPORTS_DIR / 'forecast_stainless_sales_report.png')
 
         # Создание отчета в текстовый файл
-        with open(settings.data_dir / 'forecast_stainless_sales_report.txt', 'w', encoding='utf-8') as file:
+        with open(REPORTS_DIR / 'forecast_stainless_sales_report.txt', 'w', encoding='utf-8') as file:
             file.write("Отчет с прогнозом продаж нержавеющей стали на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -436,10 +442,10 @@ def generate_category_report(option):
         canvas.get_tk_widget().pack()
 
         # Сохранение графика в файл
-        fig.savefig(settings.data_dir / 'forecast_grid_sales_report.png')
+        fig.savefig(REPORTS_DIR / 'forecast_grid_sales_report.png')
 
         # Создание отчета в текстовый файл
-        with open(settings.data_dir / 'forecast_grid_sales_report.txt', 'w', encoding='utf-8') as file:
+        with open(REPORTS_DIR / 'forecast_grid_sales_report.txt', 'w', encoding='utf-8') as file:
             file.write("Отчет с прогнозом продаж металлических сеток на следующие " + str(months) + " месяцев:\n")
             file.write(df_forecast.to_string(index=False))
 
@@ -452,37 +458,41 @@ def generate_category_report(option):
         info_textbox.insert("end", df_forecast.to_string(index=False))
 
 
-customtkinter.set_appearance_mode('dark')
-customtkinter.set_default_color_theme('dark-blue')
+def main():
+    global root
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Окно приложения
-root = customtkinter.CTk()
-root.title("Приложение для анализа и прогнозирования продаж")
+    customtkinter.set_appearance_mode('dark')
+    customtkinter.set_default_color_theme('dark-blue')
 
-# Размер окна
-root.geometry("1200x800")
+    # Окно приложения
+    root = customtkinter.CTk()
+    root.title("Приложение для анализа и прогнозирования продаж")
 
-# Лейбл
-label = customtkinter.CTkLabel(root, text='Приложение для анализа и прогнозирования продаж организации')
-label.pack(pady=20)
+    # Размер окна
+    root.geometry("1200x800")
 
-# Текстбокс
-info_textbox = customtkinter.CTkTextbox(root, height=50, width=400)
-info_textbox.pack(pady=20)
-info_textbox.insert("end", data.connection_state)
-info_textbox.insert("end", "\nВыберите необходимый отчёт:")
+    # Лейбл
+    label = customtkinter.CTkLabel(root, text='Приложение для анализа и прогнозирования продаж организации')
+    label.pack(pady=20)
 
-# Поля для выбора отчётов
-report_selection_menu = customtkinter.CTkOptionMenu(root, values=["Отчёт о выручке", "Отчёт о продажах", "Отчёт по категориям"], command=update_selected_report)
-report_selection_menu.pack(pady=10)
-report_selection_menu.set("Тип отчёта")
+    # Текстбокс
+    info_textbox = customtkinter.CTkTextbox(root, height=50, width=400)
+    info_textbox.pack(pady=20)
+    info_textbox.insert("end", data.connection_state)
+    info_textbox.insert("end", "\nВыберите необходимый отчёт:")
 
-months_selection_menu = customtkinter.CTkOptionMenu(root, values=["3", "6", "12"], command=update_selected_months)
-months_selection_menu.pack(pady=10)
-months_selection_menu.set("Количество месяцев")
+    # Поля для выбора отчётов
+    report_selection_menu = customtkinter.CTkOptionMenu(root, values=["Отчёт о выручке", "Отчёт о продажах", "Отчёт по категориям"], command=update_selected_report)
+    report_selection_menu.pack(pady=10)
+    report_selection_menu.set("Тип отчёта")
 
-# Кнопка подтверждения отчёта
-report_selection_button = customtkinter.CTkButton(root, text="Сгенерировать отчет", command=handle_report_selection)
-report_selection_button.pack(pady=10)
+    months_selection_menu = customtkinter.CTkOptionMenu(root, values=["3", "6", "12"], command=update_selected_months)
+    months_selection_menu.pack(pady=10)
+    months_selection_menu.set("Количество месяцев")
 
-root.mainloop()
+    # Кнопка подтверждения отчёта
+    report_selection_button = customtkinter.CTkButton(root, text="Сгенерировать отчет", command=handle_report_selection)
+    report_selection_button.pack(pady=10)
+
+    root.mainloop()

@@ -3,8 +3,8 @@ from pathlib import Path
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-# Корень проекта (папка над src)
-BASE_DIR = Path(__file__).resolve().parent.parent
+# Корень репозитория: src/sales_analytics/config.py -> ../..
+BASE_DIR = Path(__file__).resolve().parents[2]
 
 # Общие параметры чтения настроек: файл .env в корне проекта,
 # переменные окружения имеют приоритет над значениями из файла
@@ -16,15 +16,15 @@ ENV_FILE_CONFIG = SettingsConfigDict(
 
 
 class DatabaseSettings(BaseSettings):
-    """Параметры подключения к MySQL (переменные DB_*)."""
+    """Параметры подключения к PostgreSQL (переменные DB_*)."""
 
     model_config = SettingsConfigDict(**ENV_FILE_CONFIG, env_prefix='DB_')
 
     host: str = 'localhost'
-    port: int = Field(default=3306, ge=1, le=65535)
-    user: str = 'user'
+    port: int = Field(default=5432, ge=1, le=65535)
+    user: str = 'metal_market'
     password: SecretStr = SecretStr('')
-    name: str = 'analysissystem'
+    name: str = 'metal_market'
 
 
 class Settings(BaseSettings):

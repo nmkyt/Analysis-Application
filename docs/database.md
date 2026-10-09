@@ -6,18 +6,30 @@
 
 Параметры подключения берутся из `.env` (шаблон — `.env.example`).
 
+**1. Сервер, роль и база** — инфраструктура, папка `infra/`:
+
 ```bash
-python storage/schema.py --tables
+docker compose --env-file .env -f infra/docker-compose.yml up -d   # PostgreSQL 17 в контейнере
+python infra/postgres/schema.py                                    # или на установленном PostgreSQL
 ```
 
-Скрипт создаёт роль и базу (psql спросит пароль суперпользователя `postgres`), затем таблицы.
-Без `--tables` создаются только роль и база. Повторный запуск с `--tables` пересоздаёт таблицы — данные удаляются.
+В контейнере роль и база создаются при первом запуске. На установленном сервере
+`schema.py` выполняет `infra/postgres/schema.sql` через psql от имени суперпользователя `postgres`
+(psql спросит его пароль); повторный запуск только обновляет пароль роли.
 
-| Файл | Назначение |
+**2. Таблицы** — часть приложения, пакет `sales_analytics.storage`:
+
+```bash
+python -m sales_analytics.storage --yes
+```
+
+Таблицы пересоздаются, существующие данные удаляются, поэтому нужен флаг `--yes`.
+
+| Файл в `src/sales_analytics/storage/` | Назначение |
 |---|---|
-| `schema.sql` | роль приложения и база данных |
-| `schema.py` | запуск `schema.sql` и `tables.sql` с параметрами из `.env` |
-| `tables.sql` | таблицы, индексы и представления |
+| `sql/tables.sql` | таблицы, индексы и представления |
+| `schema.py` | `create_tables()` |
+| `postgres.py` | подключение к базе из кода: `from sales_analytics.storage import connect` |
 
 ## Модель данных
 

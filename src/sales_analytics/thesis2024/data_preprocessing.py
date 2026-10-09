@@ -2,7 +2,7 @@ import pandas as pd
 import mysql.connector as sql
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
-from .config import settings
+from ..config import settings
 
 connection = None
 

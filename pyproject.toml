@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sales-analytics"
+version = "0.2.0"
+description = "Анализ и прогнозирование продаж сети металлобаз"
+readme = "README.md"
+requires-python = ">=3.13"
+authors = [{ name = "Д.В. Логинов" }]
+dependencies = [
+    "numpy==2.5.3",
+    "pandas==3.0.6",
+    "psycopg[binary]==3.3.6",
+    "pydantic-settings==2.15.0",
+    "scikit-learn==1.9.1",
+]
+
+[project.optional-dependencies]
+# Приложение из дипломной работы 2024 года
+thesis2024 = [
+    "customtkinter==6.0.0",
+    "matplotlib==3.11.2",
+    "mysql-connector-python==26.7.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"sales_analytics.storage" = ["sql/*.sql"]

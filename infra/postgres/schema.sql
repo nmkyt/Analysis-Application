@@ -2,7 +2,7 @@
 -- Запускается от суперпользователя, имя роли, базы и пароль передаются переменными psql:
 --   psql -U postgres -h localhost -d postgres \
 --        -v app_user=metal_market -v app_db=metal_market -v app_password=... \
---        -f storage/schema.sql
+--        -f infra/postgres/schema.sql
 
 \set ON_ERROR_STOP on
 

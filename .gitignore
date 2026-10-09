@@ -10,7 +10,11 @@ venv/
 .env
 
 # Локальные инструменты подготовки данных
-src/datagen/
+src/sales_analytics/datagen/
 
 # Настройки IDE
 .idea/
+
+# Сборка пакета
+*.egg-info/
+build/
