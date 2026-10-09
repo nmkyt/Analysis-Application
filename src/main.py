@@ -1,8 +1,8 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-import analysis
-import data_preprocessing as data
-from config import settings
+from . import analysis
+from . import data_preprocessing as data
+from .config import settings
 import customtkinter
 from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
