@@ -7,9 +7,7 @@ import pytest
 
 from sales_analytics.exceptions import ModelError
 from sales_analytics.forecasting import model as model_module
-from sales_analytics.forecasting.model import METHODS, DemandModel, baselines, evaluate, forecast, load, save,     split_by_time, train
-# Импорт под другим именем: функцию test_predictions_path pytest принял бы за тест
-from sales_analytics.forecasting.model import test_predictions_path as predictions_path
+from sales_analytics.forecasting.model import METHODS, DemandModel, baselines, evaluate, evaluation_path, forecast,     load, save, split_by_time, train
 from sales_analytics.forecasting.preprocessing import build_panel, build_training_set
 from tests.data import make_data
 
@@ -56,6 +54,12 @@ def test_zero_sales_give_undefined_relative_metrics():
     metrics = evaluate([0, 0], [1, 2], [1, 1])
     assert np.isnan(metrics['wape']) and np.isnan(metrics['bias'])
     assert metrics['mae_kg'] == pytest.approx(1.5)
+
+
+def test_r2_is_undefined_for_constant_sales():
+    metrics = evaluate([10, 10], [12, 13], [1, 1])
+    assert np.isnan(metrics['r2'])
+    assert metrics['wape'] == pytest.approx(0.25)
 
 
 # ===== Разбиение и ориентиры =====
@@ -140,7 +144,7 @@ def test_train_compares_model_with_baselines(trained):
 def test_save_and_load_roundtrip(trained, training_set, tmp_path):
     path = save(trained, tmp_path)
     assert path == tmp_path / 'demand_h1.joblib'
-    assert predictions_path(1, tmp_path).exists()
+    assert evaluation_path(1, tmp_path).exists()
 
     loaded, metadata = load(1, tmp_path)
     np.testing.assert_allclose(loaded.predict(training_set.X), trained.model.predict(training_set.X))
@@ -148,6 +152,12 @@ def test_save_and_load_roundtrip(trained, training_set, tmp_path):
     assert metadata['features'] == list(training_set.X.columns)
     assert json.loads(path.with_suffix('.json').read_text(encoding='utf-8'))['metrics'].keys() == \
         set(METHODS.values())
+
+
+def test_train_with_short_history_raises(demand_data, fast_model):
+    # 85 недель: после теста и валидации в обучении меньше года, лаг 52 пустой
+    with pytest.raises(ModelError, match='qty_lag52'):
+        train(build_panel(demand_data), horizon=1)
 
 
 def test_load_missing_model_raises(tmp_path):

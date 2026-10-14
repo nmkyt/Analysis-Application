@@ -44,7 +44,6 @@ METHODS = {
     'seasonal': 'как год назад',
     'mean4': 'среднее за 4 нед.',
 }
-METRICS = ['mae_kg', 'rmse_kg', 'wape', 'bias', 'r2']
 
 
 class DemandModel:
@@ -117,6 +116,11 @@ def train(panel: pd.DataFrame, horizon: int, save_data=False) -> TrainingResult:
     """
     data = build_training_set(panel, horizon)
     train_set, valid_set, test_set = split_by_time(data)
+    # Бустинг не обучается на признаке без единого значения, например на лаге 52 при истории меньше года
+    empty = [column for column in train_set.X.columns if train_set.X[column].isna().all()]
+    if empty:
+        raise ModelError(f'В обучающей части ({_period(train_set)[0]} - {_period(train_set)[1]}) нет значений '
+                         f'признаков {", ".join(empty)}: нужна более длинная история продаж')
     if save_data:
         _save_training_set(data, valid_set, test_set)
 
@@ -173,13 +177,13 @@ def evaluate(fact, pred, kg_per_unit) -> dict:
     """Метрики в килограммах: MAE, RMSE, WAPE, bias и R² (см. README)."""
     fact = np.asarray(fact, dtype=float) * np.asarray(kg_per_unit, dtype=float)
     error = np.asarray(pred, dtype=float) * np.asarray(kg_per_unit, dtype=float) - fact
-    total = fact.sum()
+    total, spread = fact.sum(), ((fact - fact.mean()) ** 2).sum()
     return {
         'mae_kg': np.abs(error).mean(),
         'rmse_kg': np.sqrt((error ** 2).mean()),
         'wape': np.abs(error).sum() / total if total else np.nan,
         'bias': error.sum() / total if total else np.nan,
-        'r2': 1 - (error ** 2).sum() / ((fact - fact.mean()) ** 2).sum(),
+        'r2': 1 - (error ** 2).sum() / spread if spread else np.nan,
     }
 
 
@@ -224,7 +228,7 @@ def save(result: TrainingResult, directory=None):
     try:
         joblib.dump(result.model, path)
         path.with_suffix('.json').write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding='utf-8')
-        result.test.to_csv(test_predictions_path(result.horizon, directory), index=False)
+        result.test.to_csv(evaluation_path(result.horizon, directory), index=False)
     except OSError as e:
         raise ModelError(f'Не удалось сохранить модель в {path}: {e}') from e
     return path
@@ -240,7 +244,8 @@ def load(horizon: int, directory=None):
     return joblib.load(path), metadata
 
 
-def test_predictions_path(horizon: int, directory=None):
+def evaluation_path(horizon: int, directory=None):
+    """Файл с прогнозами модели и ориентиров на тестовом периоде."""
     return (directory or settings.models_dir) / f'demand_h{horizon}_test.csv.gz'
 
 

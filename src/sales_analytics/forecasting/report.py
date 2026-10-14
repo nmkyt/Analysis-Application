@@ -15,7 +15,7 @@ from matplotlib.ticker import FuncFormatter, MultipleLocator, PercentFormatter  
 
 from ..config import BASE_DIR, settings  # noqa: E402
 from ..exceptions import ModelError  # noqa: E402
-from .model import METHODS, test_predictions_path  # noqa: E402
+from .model import METHODS, evaluation_path  # noqa: E402
 
 # Цвета рядов проверены на различимость при нарушениях цветового зрения,
 # у оранжевого и жёлтого низкий контраст с фоном, поэтому у линий есть подписи
@@ -40,7 +40,7 @@ def build_report(directory=None):
     directory = directory or BASE_DIR / 'docs' / 'images'
     directory.mkdir(parents=True, exist_ok=True)
     metrics = _metrics_by_horizon()
-    test = pd.read_csv(_existing(test_predictions_path(min(metrics))), parse_dates=['week'])
+    test = pd.read_csv(_existing(evaluation_path(min(metrics))), parse_dates=['week'])
     future = _latest_forecast()
 
     paths = [directory / 'metrics_by_horizon.png', directory / 'network_forecast.png',
