@@ -34,17 +34,28 @@ class Settings(BaseSettings):
 
     db: DatabaseSettings = Field(default_factory=DatabaseSettings)
 
-    # Папка для сохранения отчётов и графиков
-    data_dir: Path = Path('data')
+    # Датасет в CSV: выгрузка таблиц учётной системы
+    dataset_dir: Path = Path('data')
+    # Результаты: модели, прогнозы, выборки для обучения
+    output_dir: Path = Path('output')
 
-    @field_validator('data_dir')
+    @field_validator('dataset_dir', 'output_dir')
     @classmethod
-    def resolve_data_dir(cls, value: Path) -> Path:
-        # Относительный путь считается от корня проекта, папка создаётся при необходимости
-        if not value.is_absolute():
-            value = BASE_DIR / value
-        value.mkdir(parents=True, exist_ok=True)
-        return value
+    def resolve_dir(cls, value: Path) -> Path:
+        # Относительный путь считается от корня проекта
+        return value if value.is_absolute() else BASE_DIR / value
+
+    @property
+    def models_dir(self) -> Path:
+        return self.output_dir / 'models'
+
+    @property
+    def forecasts_dir(self) -> Path:
+        return self.output_dir / 'forecasts'
+
+    @property
+    def training_dir(self) -> Path:
+        return self.output_dir / 'training'
 
 
 settings = Settings()

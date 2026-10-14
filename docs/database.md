@@ -20,7 +20,7 @@ python infra/postgres/schema.py                                    # или на
 **2. Таблицы** — часть приложения, пакет `sales_analytics.storage`:
 
 ```bash
-python -m sales_analytics.storage --yes
+python -m sales_analytics.storage create --yes
 ```
 
 Таблицы пересоздаются, существующие данные удаляются, поэтому нужен флаг `--yes`.
@@ -30,6 +30,9 @@ python -m sales_analytics.storage --yes
 | `sql/tables.sql` | таблицы, индексы и представления |
 | `schema.py` | `create_tables()` |
 | `postgres.py` | подключение к базе из кода: `from sales_analytics.storage import connect` |
+| `entities.py` | датаклассы `Branch`, `Product` и `DemandData` — данные для прогноза спроса |
+| `repository.py` | `load_demand_data()` — чтение справочников, ассортимента, продаж и календаря из базы, `load_demand_data_csv()` — то же из датасета в CSV |
+| `export.py` | `export_dataset()` — выгрузка всех таблиц в `data/`: `python -m sales_analytics.storage export` |
 
 ## Модель данных
 
@@ -60,3 +63,8 @@ python -m sales_analytics.storage --yes
 | Аврора, Управа (Самара) | минимаркет | перемещения с Юнгородка |
 | Студёный овраг (Самара) | минимаркет у садовых товариществ, работает с середины марта по ноябрь | перемещения с Юнгородка |
 | FeРРАРИУМ (Самара) | пункт выдачи заказов, открыт в апреле 2023 | перемещения с Юнгородка |
+
+## Датасет
+
+Выгрузка всех таблиц в CSV лежит в [data/](../data/README.md): с ней модель прогноза
+обучается без PostgreSQL.
