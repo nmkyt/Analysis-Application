@@ -15,6 +15,9 @@ src/sales_analytics/datagen/
 # Настройки IDE
 .idea/
 
+# Модели, прогнозы и выборки для обучения
+output/
+
 # Сборка пакета
 *.egg-info/
 build/
