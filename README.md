@@ -163,21 +163,17 @@ src/
     ├── storage/                  учётная система в PostgreSQL
     │   ├── sql/tables.sql        таблицы, индексы и представления
     │   ├── schema.py             create_tables()
-    │   ├── postgres.py           connect() — подключение с параметрами из .env
+    │   ├── postgres.py           connect() — подключение с параметрами из .env, create_database()
     │   ├── entities.py           датаклассы: Branch, Product, DemandData
     │   ├── repository.py         load_demand_data() из базы, load_demand_data_csv() из датасета
     │   ├── export.py             export_dataset() — выгрузка таблиц в CSV
-    │   └── __main__.py           точка входа: создание таблиц, выгрузка датасета
+    │   └── __main__.py           точка входа: роль и база, таблицы, выгрузка датасета
     └── forecasting/              прогноз спроса
         ├── preprocessing.py      недельная панель и признаки: DemandData -> TrainingSet
         ├── model.py              обучение, метрики, сохранение, прогноз
         ├── report.py             графики
         └── __main__.py           точка входа: train, predict, report
-infra/                            инфраструктура
-├── docker-compose.yml            PostgreSQL в контейнере
-└── postgres/
-    ├── schema.sql                роль приложения и база данных на установленном PostgreSQL
-    └── schema.py                 запуск schema.sql с параметрами из .env
+infra/docker-compose.yml          PostgreSQL в контейнере
 data/                             датасет: таблицы учётной системы в CSV
 docs/
 ├── database.md                   описание модели данных
@@ -222,7 +218,7 @@ python -m sales_analytics.forecasting report                           # гра�
 
 ```bash
 docker compose --env-file .env -f infra/docker-compose.yml up -d   # PostgreSQL в контейнере
-python infra/postgres/schema.py                                    # или роль и база на установленном PostgreSQL
+python -m sales_analytics.storage init                             # или роль и база на установленном PostgreSQL
 python -m sales_analytics.storage create --yes                     # таблицы
 python -m sales_analytics.storage export                           # выгрузка таблиц в data/
 ```

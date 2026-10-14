@@ -1,6 +1,6 @@
 """Таблицы учётной системы: создание по sql/tables.sql.
 
-Роль и база данных создаются отдельно - см. infra/.
+Роль и база данных создаются отдельно: create_database() в postgres.py или Docker (infra/).
 """
 from pathlib import Path
 

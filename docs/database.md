@@ -6,16 +6,16 @@
 
 Параметры подключения берутся из `.env` (шаблон — `.env.example`).
 
-**1. Сервер, роль и база** — инфраструктура, папка `infra/`:
+**1. Сервер, роль и база** — один из двух вариантов:
 
 ```bash
 docker compose --env-file .env -f infra/docker-compose.yml up -d   # PostgreSQL 17 в контейнере
-python infra/postgres/schema.py                                    # или на установленном PostgreSQL
+python -m sales_analytics.storage init                             # или на установленном PostgreSQL
 ```
 
-В контейнере роль и база создаются при первом запуске. На установленном сервере
-`schema.py` выполняет `infra/postgres/schema.sql` через psql от имени суперпользователя `postgres`
-(psql спросит его пароль); повторный запуск только обновляет пароль роли.
+В контейнере роль и база создаются при первом запуске. На установленном сервере `init` создаёт
+их от имени суперпользователя `postgres` (другой — `--superuser`): пароль берётся из `PGPASSWORD`
+или запрашивается в терминале. Повторный запуск только обновляет пароль роли.
 
 **2. Таблицы** — часть приложения, пакет `sales_analytics.storage`:
 
@@ -29,7 +29,7 @@ python -m sales_analytics.storage create --yes
 |---|---|
 | `sql/tables.sql` | таблицы, индексы и представления |
 | `schema.py` | `create_tables()` |
-| `postgres.py` | подключение к базе из кода: `from sales_analytics.storage import connect` |
+| `postgres.py` | `connect()` — подключение к базе из кода: `from sales_analytics.storage import connect`; `create_database()` — роль и база |
 | `entities.py` | датаклассы `Branch`, `Product` и `DemandData` — данные для прогноза спроса |
 | `repository.py` | `load_demand_data()` — чтение справочников, ассортимента, продаж и календаря из базы, `load_demand_data_csv()` — то же из датасета в CSV |
 | `export.py` | `export_dataset()` — выгрузка всех таблиц в `data/`: `python -m sales_analytics.storage export` |
