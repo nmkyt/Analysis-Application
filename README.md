@@ -158,7 +158,7 @@ WAPE около 85 % выглядит большим, но это ошибка �
 ```
 src/
 └── sales_analytics/              устанавливаемый пакет (импорт: sales_analytics.*)
-    ├── config.py                 настройки из .env: DB_*, DATASET_DIR, OUTPUT_DIR (pydantic-settings)
+    ├── config.py                 настройки из .env: DB_*, DATASET_DIR, OUTPUT_DIR, API_* (pydantic-settings)
     ├── exceptions.py             SalesAnalyticsError и производные
     ├── storage/                  учётная система в PostgreSQL
     │   ├── sql/tables.sql        таблицы, индексы и представления
@@ -167,15 +167,21 @@ src/
     │   ├── entities.py           датаклассы: Branch, Product, DemandData
     │   ├── repository.py         load_demand_data() из базы, load_demand_data_csv() из датасета
     │   ├── export.py             export_dataset() — выгрузка таблиц в CSV
-    │   └── __main__.py           точка входа: роль и база, таблицы, выгрузка датасета
-    └── forecasting/              прогноз спроса
-        ├── preprocessing.py      недельная панель и признаки: DemandData -> TrainingSet
-        ├── model.py              обучение, метрики, сохранение, прогноз
-        ├── report.py             графики
-        └── __main__.py           точка входа: train, predict, report
+    │   └── __main__.py           командная строка: роль и база, таблицы, выгрузка датасета
+    ├── forecasting/              прогноз спроса
+    │   ├── preprocessing.py      недельная панель и признаки: DemandData -> TrainingSet
+    │   ├── model.py              обучение, метрики, сохранение, прогноз
+    │   ├── report.py             графики
+    │   └── __main__.py           командная строка: train, predict, report
+    └── api/                      REST API на FastAPI — единая точка входа
+        ├── app.py                приложение, ошибки пакета -> HTTP-коды
+        ├── routes.py             эндпоинты
+        ├── schemas.py            модели запросов и ответов
+        ├── jobs.py               фоновые задачи: обучение, выгрузка датасета
+        └── __main__.py           запуск: python -m sales_analytics.api
 infra/docker-compose.yml          PostgreSQL в контейнере
 data/                             датасет: таблицы учётной системы в CSV
-tests/                            юнит-тесты (pytest)
+tests/                            юнит-тесты (pytest), в том числе API
 docs/
 ├── database.md                   описание модели данных
 └── images/                       графики для README
@@ -192,7 +198,42 @@ python -m venv .venv
 cp .env.example .env
 ```
 
-### Прогноз на датасете
+### REST API
+
+Единая точка входа — REST API на FastAPI:
+
+```bash
+python -m sales_analytics.api        # http://127.0.0.1:8000, адрес и порт - API_HOST и API_PORT в .env
+```
+
+На http://127.0.0.1:8000/docs — документация, где любой запрос можно выполнить прямо из браузера.
+Данные берутся из датасета (`"source": "dataset"`, по умолчанию) или из базы (`"source": "db"`).
+
+| Запрос | Что делает |
+|---|---|
+| `GET /health` | доступна ли база, есть ли датасет, какие модели обучены |
+| `POST /models/train` | обучение в фоне, ответ — задача; тело `{"horizons": [1, 2, 3, 4], "source": "dataset"}` |
+| `GET /jobs/{id}` | статус фоновой задачи: `running`, `done` или `failed` с текстом ошибки |
+| `GET /models`, `GET /models/{h}` | обученные модели: периоды, признаки, метрики на тесте |
+| `POST /forecasts` | прогноз на недели после конца данных; сохраняется в `output/forecasts` |
+| `GET /forecasts/latest` | строки последнего прогноза: фильтры `branch`, `product_id`, `horizon`, страницы `offset`, `limit` |
+| `GET /forecasts/latest/summary` | последний прогноз по всей сети, тонн в неделю |
+| `POST /dataset/export` | выгрузка таблиц из базы в `data/` в фоне |
+
+Пример — обучить модель на неделю вперёд, построить прогноз и посмотреть его по базе YUN:
+
+```bash
+curl -X POST localhost:8000/models/train -H "Content-Type: application/json" -d '{"horizons": [1]}'
+curl localhost:8000/jobs/<id>
+curl -X POST localhost:8000/forecasts -H "Content-Type: application/json" -d '{"horizons": [1]}'
+curl "localhost:8000/forecasts/latest?branch=YUN&limit=20"
+```
+
+Ошибки: база недоступна — 503, нет датасета или модели — 409, неверный запрос — 422.
+Одновременно идёт одно обучение и одна выгрузка; статусы задач хранятся в памяти и сбрасываются
+при перезапуске. API рассчитан на локальный запуск и не проверяет пользователей.
+
+### Прогноз на датасете из командной строки
 
 PostgreSQL не нужен: данные читаются из `data/`.
 
@@ -239,6 +280,7 @@ python -m pytest
 признаки для целевых недель раньше T + h не меняются. Кроме того: построение панели
 (границы рядов, нули, закрытые недели), прогноз на будущие недели, чтение датасета из CSV,
 метрики на примерах, посчитанных вручную, разбиение по времени, сохранение и загрузку модели.
+API проверяется через `TestClient`: все эндпоинты, коды ошибок, фильтры и фоновые задачи.
 Подключение к базе, выгрузка датасета и графики юнит-тестами не покрываются.
 
 ## Технологии
@@ -249,4 +291,5 @@ python -m pytest
 | СУБД | MySQL | PostgreSQL 17 |
 | Анализ данных | pandas, scikit-learn | pandas, NumPy, scikit-learn |
 | Графики | matplotlib | matplotlib |
+| Интерфейс | customtkinter | REST API: FastAPI, uvicorn |
 | Конфигурация | — | `.env` + pydantic-settings |

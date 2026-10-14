@@ -4,8 +4,6 @@
     network_forecast.png   - продажи сети по неделям: факт, прогноз на тесте и прогноз на будущее
     series_examples.png    - факт и прогноз на тесте для четырёх крупнейших рядов
 """
-import json
-
 import matplotlib
 
 matplotlib.use('Agg')
@@ -15,7 +13,7 @@ from matplotlib.ticker import FuncFormatter, MultipleLocator, PercentFormatter  
 
 from ..config import BASE_DIR, settings  # noqa: E402
 from ..exceptions import ModelError  # noqa: E402
-from .model import METHODS, evaluation_path  # noqa: E402
+from .model import METHODS, evaluation_path, latest_forecast, saved_models  # noqa: E402
 
 # Цвета рядов проверены на различимость при нарушениях цветового зрения,
 # у оранжевого и жёлтого низкий контраст с фоном, поэтому у линий есть подписи
@@ -39,9 +37,11 @@ def build_report(directory=None):
     """Строит графики в directory (по умолчанию docs/images), возвращает пути к файлам."""
     directory = directory or BASE_DIR / 'docs' / 'images'
     directory.mkdir(parents=True, exist_ok=True)
-    metrics = _metrics_by_horizon()
+    metrics = {horizon: metadata['metrics'] for horizon, metadata in saved_models().items()}
+    if not metrics:
+        raise ModelError(f'В {settings.models_dir} нет моделей: python -m sales_analytics.forecasting train')
     test = pd.read_csv(_existing(evaluation_path(min(metrics))), parse_dates=['week'])
-    future = _latest_forecast()
+    future, _ = latest_forecast()
 
     paths = [directory / 'metrics_by_horizon.png', directory / 'network_forecast.png',
              directory / 'series_examples.png']
@@ -124,23 +124,6 @@ def _plot_series(test, future):
     figure.autofmt_xdate()
     figure.tight_layout()
     return figure
-
-
-def _metrics_by_horizon():
-    metrics = {}
-    for path in sorted(settings.models_dir.glob('demand_h*.json')):
-        metadata = json.loads(path.read_text(encoding='utf-8'))
-        metrics[metadata['horizon']] = metadata['metrics']
-    if not metrics:
-        raise ModelError(f'В {settings.models_dir} нет моделей: python -m sales_analytics.forecasting train')
-    return metrics
-
-
-def _latest_forecast():
-    files = sorted(settings.forecasts_dir.glob('forecast_*.csv'))
-    if not files:
-        return None
-    return pd.read_csv(files[-1], parse_dates=['origin_week', 'week'])
 
 
 def _existing(path):

@@ -5,7 +5,7 @@
     python -m sales_analytics.forecasting report [--dir docs/images]
 
 Данные читаются из базы, а с --data - из датасета в CSV (например, --data data).
-Результаты сохраняются в output/ (OUTPUT_DIR).
+Результаты сохраняются в output/ (OUTPUT_DIR). Те же действия доступны через REST API: python -m sales_analytics.api
 """
 import argparse
 import sys
@@ -13,10 +13,9 @@ from pathlib import Path
 
 import pandas as pd
 
-from ..config import settings
 from ..exceptions import SalesAnalyticsError
 from ..storage import load_demand_data, load_demand_data_csv
-from .model import HORIZONS, METHODS, forecast, save, train
+from .model import HORIZONS, METHODS, forecast, save, save_forecast, train
 from .preprocessing import build_panel
 from .report import build_report
 
@@ -66,12 +65,9 @@ def _train(data, horizons, save_data):
 
 def _predict(data, horizons):
     result = forecast(data, horizons)
-    origin = result['origin_week'].iloc[0].date()
-    settings.forecasts_dir.mkdir(parents=True, exist_ok=True)
-    path = settings.forecasts_dir / f'forecast_{origin}.csv'
-    result.to_csv(path, index=False)
+    path = save_forecast(result)
 
-    print(f'Последняя известная неделя: {origin}')
+    print(f'Последняя известная неделя: {result["origin_week"].iloc[0].date()}')
     total = result.groupby(['horizon', 'week'])['forecast_kg'].sum().div(1000).rename('тонн').reset_index()
     print(total.to_string(index=False, float_format=lambda value: f'{value:.1f}'))
     print(f'Сохранено: {path} ({len(result)} строк)')

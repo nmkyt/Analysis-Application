@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     # Результаты: модели, прогнозы, выборки для обучения
     output_dir: Path = Path('output')
 
+    # Адрес REST API: по умолчанию доступен только с этого компьютера
+    api_host: str = '127.0.0.1'
+    api_port: int = Field(default=8000, ge=1, le=65535)
+
     @field_validator('dataset_dir', 'output_dir')
     @classmethod
     def resolve_dir(cls, value: Path) -> Path:

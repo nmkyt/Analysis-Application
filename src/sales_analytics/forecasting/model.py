@@ -244,6 +244,36 @@ def load(horizon: int, directory=None):
     return joblib.load(path), metadata
 
 
+def saved_models(directory=None) -> dict[int, dict]:
+    """Описания всех сохранённых моделей: горизонт -> содержимое demand_h{h}.json."""
+    directory = directory or settings.models_dir
+    models = {}
+    for path in directory.glob('demand_h*.json'):
+        metadata = json.loads(path.read_text(encoding='utf-8'))
+        models[metadata['horizon']] = metadata
+    return dict(sorted(models.items()))
+
+
+def save_forecast(result: pd.DataFrame, directory=None):
+    """Сохраняет прогноз forecast() в forecast_{последняя известная неделя}.csv, возвращает путь."""
+    directory = directory or settings.forecasts_dir
+    directory.mkdir(parents=True, exist_ok=True)
+    path = directory / f'forecast_{result["origin_week"].iloc[0].date()}.csv'
+    try:
+        result.to_csv(path, index=False)
+    except OSError as e:
+        raise ModelError(f'Не удалось сохранить прогноз в {path}: {e}') from e
+    return path
+
+
+def latest_forecast(directory=None):
+    """Последний сохранённый прогноз и путь к нему или (None, None), если прогнозов нет."""
+    files = sorted((directory or settings.forecasts_dir).glob('forecast_*.csv'))
+    if not files:
+        return None, None
+    return pd.read_csv(files[-1], parse_dates=['origin_week', 'week']), files[-1]
+
+
 def evaluation_path(horizon: int, directory=None):
     """Файл с прогнозами модели и ориентиров на тестовом периоде."""
     return (directory or settings.models_dir) / f'demand_h{horizon}_test.csv.gz'
