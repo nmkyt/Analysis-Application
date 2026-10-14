@@ -18,8 +18,17 @@ dependencies = [
     "scikit-learn==1.9.1",
 ]
 
+[project.optional-dependencies]
+# Тесты: pip install -e ".[dev]"
+dev = [
+    "pytest==9.1.1",
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
 "sales_analytics.storage" = ["sql/*.sql"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
