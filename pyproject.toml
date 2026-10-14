@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=75"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
 
 [project]
 name = "sales-analytics"
@@ -24,11 +24,9 @@ dev = [
     "pytest==9.1.1",
 ]
 
-[tool.setuptools.packages.find]
-where = ["src"]
-
-[tool.setuptools.package-data]
-"sales_analytics.storage" = ["sql/*.sql"]
+# Файлы из .gitignore (в том числе datagen/) в пакет не попадают, sql-файлы - попадают
+[tool.hatch.build.targets.wheel]
+packages = ["src/sales_analytics"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

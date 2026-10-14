@@ -19,5 +19,4 @@ src/sales_analytics/datagen/
 output/
 
 # Сборка пакета
-*.egg-info/
-build/
+dist/
